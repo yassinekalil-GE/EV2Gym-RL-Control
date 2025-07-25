@@ -1,0 +1,8 @@
+number_of_charging_stations: 25
+number_of_ports_per_cs: 1
+number_of_transformers: 1
+scenario: public
+simulation_length: 112
+spawn_multiplier: 5.0
+timescale: 15
+v2g_enabled: false

@@ -1,0 +1,157 @@
+version: '3.8'
+
+services:
+  # Dashboard principal avec Gurobi et IA
+  ev2gym-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: ev2gym-dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+      - STREAMLIT_LOGGER_LEVEL=info
+      - GUROBI_HOME=/opt/gurobi
+      - GRB_LICENSE_FILE=/app/gurobi.lic
+    volumes:
+      # Données réelles
+      - ./EV2Gym/ev2gym/data:/app/data:ro
+      # Modèles entraînés
+      - ./models:/app/models
+      # Exports et résultats
+      - ./exports:/app/exports
+      # Logs
+      - ./logs:/app/logs
+      # Configuration Gurobi (si disponible)
+      - ./gurobi.lic:/app/gurobi.lic:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - ev2gym-network
+    depends_on:
+      - ev2gym-db
+      - ev2gym-redis
+
+  # Base de données PostgreSQL pour stocker les résultats
+  ev2gym-db:
+    image: postgres:15-alpine
+    container_name: ev2gym-db
+    environment:
+      - POSTGRES_DB=ev2gym
+      - POSTGRES_USER=ev2gym
+      - POSTGRES_PASSWORD=ev2gym_secure_password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - ev2gym_db_data:/var/lib/postgresql/data
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - ev2gym-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ev2gym"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis pour le cache et les sessions
+  ev2gym-redis:
+    image: redis:7-alpine
+    container_name: ev2gym-redis
+    command: redis-server --appendonly yes --requirepass ev2gym_redis_password
+    volumes:
+      - ev2gym_redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - ev2gym-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Service de monitoring avec Grafana
+  ev2gym-grafana:
+    image: grafana/grafana:latest
+    container_name: ev2gym-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=ev2gym_admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ev2gym_grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - ev2gym-network
+    depends_on:
+      - ev2gym-db
+
+  # Service de métriques avec Prometheus
+  ev2gym-prometheus:
+    image: prom/prometheus:latest
+    container_name: ev2gym-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ev2gym_prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    networks:
+      - ev2gym-network
+
+  # Service Jupyter pour l'analyse de données
+  ev2gym-jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile.jupyter
+    container_name: ev2gym-jupyter
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=ev2gym_jupyter_token
+    volumes:
+      - ./notebooks:/home/jovyan/work
+      - ./EV2Gym/ev2gym/data:/home/jovyan/work/data:ro
+      - ./models:/home/jovyan/work/models
+    ports:
+      - "8888:8888"
+    restart: unless-stopped
+    networks:
+      - ev2gym-network
+
+volumes:
+  ev2gym_db_data:
+    driver: local
+  ev2gym_redis_data:
+    driver: local
+  ev2gym_grafana_data:
+    driver: local
+  ev2gym_prometheus_data:
+    driver: local
+
+networks:
+  ev2gym-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

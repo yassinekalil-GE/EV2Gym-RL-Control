@@ -1,0 +1,9 @@
+apiVersion: 1
+datasources:
+  - name: EV2Gym PostgreSQL
+    type: postgres
+    url: ev2gym-db:5432
+    database: ev2gym
+    user: ev2gym
+    secureJsonData:
+      password: ev2gym_secure_password

@@ -1,0 +1,37 @@
+# EV2Gym Dashboard Requirements
+# Core dependencies for the enhanced web dashboard
+
+# Web framework
+streamlit>=1.28.0
+
+# Data manipulation and analysis
+pandas>=1.5.0
+numpy>=1.24.0
+
+# Visualization
+plotly>=5.15.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Network analysis
+networkx>=3.1
+
+# File handling
+openpyxl>=3.1.0
+xlsxwriter>=3.1.0
+
+# YAML configuration
+PyYAML>=6.0
+
+# Date and time handling
+python-dateutil>=2.8.0
+
+# Optional: For advanced features
+# scikit-learn>=1.3.0  # For ML-based analysis
+# scipy>=1.11.0        # For statistical analysis
+# dash>=2.14.0         # Alternative dashboard framework
+# bokeh>=3.2.0         # Alternative visualization
+
+# EV2Gym specific (should be installed separately)
+# ev2gym  # Install from source or pip if available
+# gurobi  # For MPC agents (requires license)

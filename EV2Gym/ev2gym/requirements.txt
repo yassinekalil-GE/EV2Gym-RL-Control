@@ -1,0 +1,31 @@
+# Core dependencies
+gymnasium>=0.29.0
+numpy>=1.21.0
+pandas>=1.3.0
+matplotlib>=3.5.0
+pyyaml>=6.0
+scipy>=1.7.0
+
+# Optional dependencies for optimization baselines
+gurobipy>=10.0.0  # For mathematical optimization (requires license)
+
+# Optional dependencies for machine learning
+torch>=1.12.0  # For deep RL agents
+stable-baselines3>=2.0.0  # For RL algorithms
+
+# Development and visualization
+tqdm>=4.64.0
+seaborn>=0.11.0
+plotly>=5.0.0  # For interactive plots
+
+# Web interface (optional)
+streamlit>=1.25.0
+dash>=2.10.0
+
+# Jupyter notebook support (optional)
+jupyter>=1.0.0
+ipywidgets>=7.6.0
+
+# Testing (optional)
+pytest>=7.0.0
+pytest-cov>=4.0.0

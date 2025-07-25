@@ -1,0 +1,58 @@
+{
+  "Tesla Model 3": {
+    "battery_capacity": 57.5,
+    "max_ac_charge_power": 11,
+    "max_ac_discharge_power": 11,
+    "registrations": 47783,
+    "avg_efficiency": 89.0
+  },
+  "Tesla Model Y": {
+    "battery_capacity": 57.5,
+    "max_ac_charge_power": 11,
+    "max_ac_discharge_power": 11,
+    "registrations": 39261,
+    "avg_efficiency": 89.0
+  },
+  "Kia Niro": {
+    "battery_capacity": 64.8,
+    "max_ac_charge_power": 11,
+    "max_ac_discharge_power": 11,
+    "registrations": 28028,
+    "avg_efficiency": 90.0
+  },
+  "Volkswagen ID.3": {
+    "battery_capacity": 58,
+    "max_ac_charge_power": 11,
+    "max_ac_discharge_power": 11,
+    "registrations": 23033,
+    "avg_efficiency": 89.0
+  },
+  "Skoda Enyaq": {
+    "battery_capacity": 58,
+    "max_ac_charge_power": 11,
+    "max_ac_discharge_power": 11,
+    "registrations": 21186,
+    "avg_efficiency": 89.5
+  },
+  "Hyundai Kona": {
+    "battery_capacity": 64,
+    "max_ac_charge_power": 11,
+    "max_ac_discharge_power": 11,
+    "registrations": 19815,
+    "avg_efficiency": 92.0
+  },
+  "Peugeot 208": {
+    "battery_capacity": 46.3,
+    "max_ac_charge_power": 7.4,
+    "max_ac_discharge_power": 7.4,
+    "registrations": 17785,
+    "avg_efficiency": 88.5
+  },
+  "Volkswagen ID.4": {
+    "battery_capacity": 77,
+    "max_ac_charge_power": 11,
+    "max_ac_discharge_power": 11,
+    "registrations": 16449,
+    "avg_efficiency": 90.0
+  }
+}

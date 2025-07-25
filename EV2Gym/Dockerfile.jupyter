@@ -1,0 +1,35 @@
+# Jupyter Notebook pour l'analyse EV2Gym
+FROM jupyter/scipy-notebook:latest
+
+USER root
+
+# Installer les dépendances système
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+USER jovyan
+
+# Installer les packages Python pour l'analyse
+RUN pip install --no-cache-dir \
+    plotly \
+    streamlit \
+    gurobipy \
+    scikit-learn \
+    xgboost \
+    lightgbm \
+    seaborn \
+    networkx \
+    pyyaml \
+    joblib
+
+# Copier les notebooks d'exemple
+COPY notebooks/ /home/jovyan/work/
+
+# Exposer le port Jupyter
+EXPOSE 8888
+
+# Commande par défaut
+CMD ["start-notebook.sh", "--NotebookApp.token='ev2gym_jupyter_token'"]

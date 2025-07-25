@@ -1,0 +1,74 @@
+# EV2Gym Dashboard Docker Image avec Gurobi
+FROM python:3.9-slim
+
+# Métadonnées
+LABEL maintainer="EV2Gym Team"
+LABEL description="EV2Gym Enhanced Web Dashboard with Gurobi"
+LABEL version="2.0"
+
+# Variables d'environnement
+ENV PYTHONUNBUFFERED=1
+ENV STREAMLIT_SERVER_PORT=8501
+ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
+ENV STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+ENV GUROBI_HOME=/opt/gurobi
+ENV PATH="${PATH}:${GUROBI_HOME}/bin"
+ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"
+
+# Répertoire de travail
+WORKDIR /app
+
+# Installer les dépendances système
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    git \
+    wget \
+    curl \
+    unzip \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Installer Gurobi
+RUN wget -q https://packages.gurobi.com/9.5/gurobi9.5.2_linux64.tar.gz \
+    && tar xzf gurobi9.5.2_linux64.tar.gz \
+    && mv gurobi952/linux64 /opt/gurobi \
+    && rm -rf gurobi9.5.2_linux64.tar.gz gurobi952
+
+# Copier les fichiers de requirements
+COPY requirements_dashboard.txt .
+
+# Installer les dépendances Python de base
+RUN pip install --no-cache-dir -r requirements_dashboard.txt
+
+# Installer Gurobi Python
+RUN pip install --no-cache-dir gurobipy
+
+# Copier le code source EV2Gym
+COPY EV2Gym/ ./EV2Gym/
+
+# Installer EV2Gym
+RUN cd EV2Gym && pip install -e .
+
+# Copier les fichiers du dashboard
+COPY *.py .
+
+# Créer les répertoires nécessaires
+RUN mkdir -p /app/data /app/models /app/exports /app/logs
+
+# Copier les données
+COPY EV2Gym/ev2gym/data/ ./data/
+
+# Créer un utilisateur non-root
+RUN useradd -m -u 1000 dashboard && chown -R dashboard:dashboard /app
+USER dashboard
+
+# Exposer le port
+EXPOSE 8501
+
+# Point de santé
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+
+# Commande par défaut
+CMD ["streamlit", "run", "data_driven_dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
